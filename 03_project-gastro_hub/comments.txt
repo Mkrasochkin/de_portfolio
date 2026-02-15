@@ -1,0 +1,99 @@
+/*Добавьте в этот файл комментарии по проекту, которые вы считаете необходимыми, 
+и вопросы ревьюеру*/
+
+ЗАДАНИЕ 6
+
+
+Открываю транзакцию и блокирую строки где в меню есть капучино блокировкой типа FOR NO KEY UPDATE. 
+Этот тип исключает изменения заблокированных строк, а к остальным строкам оставляет полный доступ.
+
+
+BEGIN;
+
+	SELECT
+		cafe_name,
+		(menu->> 'Кофе')::jsonb
+	FROM cafe.restaurants
+	WHERE type = 'coffee_shop' and (menu #>> '{Кофе, Капучино}')::int > 0
+	FOR NO KEY UPDATE;
+
+
+
+В CTE считаю обновленные цены на капучино (+20%)
+
+
+	WITH
+	np_capuchino AS (
+		SELECT
+			cafe_name,
+			(menu #>> '{Кофе, Капучино}')::int as price,
+			((menu #>> '{Кофе, Капучино}')::int) * 1.2 as new_price
+		FROM cafe.restaurants
+		WHERE type = 'coffee_shop' and (menu #>> '{Кофе, Капучино}')::int > 0
+		)
+
+
+В основном запросе использую UPDATE для 2х связанных таблиц restaurants и np_capuchino.
+
+	UPDATE cafe.restaurants as r
+	SET menu = JSONB_SET(menu, '{Кофе, Капучино}', to_jsonb(new_price))	
+	FROM np_capuchino
+	WHERE r.cafe_name =  np_capuchino.cafe_name;
+
+
+Закрываю транзакцию и снимаю блокировку со строк.
+
+COMMIT;
+
+
+
+
+
+ЗАДАНИЕ 7
+
+
+
+Открываю транзакцию и блокирую таблицу EXCLUSIVE - ведь таблица managers должна быть недоступна для изменений со стороны других пользователей, но доступна для чтения.
+Создаю новое поле для массива номеров телефонов
+
+BEGIN;
+	LOCK TABLE cafe.managers in exclusive mode;	
+	ALTER TABLE cafe.managers  ADD COLUMN add_phones text[];
+
+
+В СTE в таблице rn_manager придаю порядковый номер менеджера по алфавиту с помощью ROW_NUMBER(), начиная с номера 100.
+
+	WITH 
+	rn_manager AS (
+		SELECT *,
+		ROW_NUMBER() OVER (ORDER BY manager) + 100 as add
+		FROM cafe.managers
+	),
+
+В таблице nn_manager создаю новый номер, объединяя строки функцией CONCAT().
+
+	nn_manager AS (
+	SELECT *,
+		CONCAT('8-800-2500-', add) as new_number
+	FROM rn_manager
+	)
+
+В основном запросе использую UPDATE для 2х связанных таблиц managers и nn_manager.
+
+	UPDATE cafe.managers m
+	SET add_phones = ARRAY[nn.new_number, m.manager_phone]
+	FROM nn_manager nn
+	WHERE m.manager_uuid = nn.manager_uuid;
+
+Удаляю старое поле с телефоном.
+
+	ALTER TABLE cafe.managers DROP COLUMN manager_phone;
+
+Закрываю транзакцию и снимаю блокировку с таблицы.
+
+COMMIT;
+
+
+
+
+
