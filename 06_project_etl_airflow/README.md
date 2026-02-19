@@ -12,46 +12,6 @@
 
 ## Архитектура и поток данных
 
-Проект реализует классический цикл обработки данных от внешних облачных систем до финальной бизнес-аналитики:
-
-
-```mermaid
-graph TD
-    %% Источники
-    subgraph "External Sources (Внешние системы)"
-        A[<b>Store API</b><br/>Генерация отчетов]
-        B[<b>Yandex Cloud S3</b><br/>Хранение CSV файлов]
-    end
-
-    %% Процесс в Airflow
-    subgraph "Airflow ETL Pipeline (Python & Pandas)"
-        C{PythonOperator}
-        D[<b>Data Cleaning</b><br/>Удаление дублей<br/>Обработка статусов]
-        E[<b>Financial Logic</b><br/>Сторнирование Refunded]
-    end
-
-    %% Целевая база
-    subgraph "Data Warehouse (PostgreSQL)"
-        F[(<b>Staging Layer</b><br/>Сырые очищенные данные)]
-        G[(<b>Core / Marts</b><br/>Витрины Sales & Retention)]
-    end
-
-    %% Потоки данных
-    A -- "1. Запрос task_id" --> C
-    C -- "2. Проверка SUCCESS (Polling)" --> A
-    B -- "3. Скачивание CSV" --> C
-    C --> D
-    D --> E
-    E -- "4. PostgresHook (to_sql)" --> F
-    F -- "5. SQL Scripts (PostgresOperator)" --> G
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style G fill:#bbf,stroke:#333,stroke-width:4px
-```
-
-## Архитектура и поток данных
-
 Пайплайн настроен на последовательную обработку данных от внешнего источника до финальных витрин:
 
 
