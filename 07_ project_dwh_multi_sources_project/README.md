@@ -3,7 +3,6 @@
 ## Описание проекта
 Данный проект направлен на построение многослойного хранилища данных (DWH) для автоматизации расчета ежемесячных выплат курьерам. Основная задача заключалась в том, чтобы собрать данные из внешнего API службы доставки, объединить их с уже имеющимися данными о заказах и подготовить итоговую финансовую витрину.
 
-Цель проекта — создание масштабируемого многослойного хранилища данных (DWH) для автоматизации ежемесячных выплат курьерам. Система интегрирует данные из внешней курьерской службы (через API) и связывает их с существующей базой заказов.
 
 **Что было сделано в проекте:**
 *   **Сбор данных**: Настройка загрузки данных из внешнего API (справочники курьеров и лог доставок).
@@ -52,6 +51,45 @@ sequenceDiagram
     end
     L-->>A: Возврат total_loaded
 ```
+
+```mermaid
+sequenceDiagram
+    participant A as Airflow (DAG)
+    participant L as Loader (CourierLoader/DeliveryLoader)
+    participant SR as SettingsRepository (High Watermark)
+    participant OR as OriginRepository (STG)
+    participant DR as DestRepository (DDS)
+    participant DB as PostgreSQL
+
+    A->>L: Вызов load_couriers() / load_deliveries()
+    
+    rect rgb(240, 240, 240)
+    Note over L, DB: Начало транзакции (with conn.connection())
+    
+    L->>SR: get_setting (Вычитать last_loaded_id)
+    SR-->>L: Текущий порог (threshold)
+    
+    L->>OR: list_objects(threshold, limit)
+    OR->>DB: SELECT ... WHERE id > threshold ORDER BY id
+    DB-->>OR: Список объектов (List[Obj])
+    OR-->>L: Список объектов
+    
+    loop Обработка пачки (Batch)
+        L->>DR: insert_object(conn, data)
+        DR->>DB: INSERT ... ON CONFLICT DO UPDATE
+    end
+    
+    L->>SR: save_setting (Обновить last_loaded_id)
+    SR->>DB: UPDATE etl_settings
+    
+    Note over L, DB: Фиксация транзакции (Commit)
+    end
+    
+    L-->>A: Лог завершения загрузки
+```
+
+
+
 
 
 ## Навыки и инструменты
