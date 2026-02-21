@@ -26,6 +26,7 @@
 
 
 ### Взаимодействие компонентов (ETL Logic)
+Ниже представлена схема взаимодействия разработанных Python-классов при выгрузке данных из API в Staging-слой:
 
 ```mermaid
 sequenceDiagram
@@ -51,6 +52,8 @@ sequenceDiagram
     end
     L-->>A: Возврат total_loaded
 ```
+
+Схема переноса данных в DDS-слой:
 
 ```mermaid
 sequenceDiagram
