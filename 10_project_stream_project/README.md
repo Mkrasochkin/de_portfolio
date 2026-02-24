@@ -13,7 +13,7 @@
  [ Ресторан ] ──► [ Kafka ] ──► [ Spark Streaming ] ──► [ PostgreSQL ] ──► [ Kafka ] ──► [ Push Service ]
  (Акция)          (Raw JSON)    (Enrichment/Join)     (Feedback Log)      (Ready JSON)   (User Notification)
 ```
-![Архитектура проекта](https://github.com) 
+![Архитектура проекта](https://github.com/Mkrasochkin/de_portfolio/blob/main/10_project_stream_project/2._Proekt_1663599076.png) 
 *(Примечание: замените ссылку на реальный путь к загруженному скриншоту схемы)*
 
 **Основные этапы работы сервиса:**
