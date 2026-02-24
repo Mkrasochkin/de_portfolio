@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  cdm-service:
+    build:
+      context: .
+      network: host
+    image: cdm_service:local
+    container_name: cdm_service_container
+    environment:
+      FLASK_APP: ${cdm_SERVICE_APP_NAME:-cdm_service}
+      DEBUG: ${cdm_SERVICE_DEBUG:-True}
+
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+      KAFKA_CONSUMER_USERNAME: ${KAFKA_CONSUMER_USERNAME}
+      KAFKA_CONSUMER_PASSWORD: ${KAFKA_CONSUMER_PASSWORD}
+      KAFKA_CONSUMER_GROUP: ${KAFKA_CONSUMER_GROUP}
+      KAFKA_SOURCE_TOPIC: ${KAFKA_DDS_SERVICE_ORDERS_TOPIC}
+
+      PG_WAREHOUSE_HOST: ${PG_WAREHOUSE_HOST}
+      PG_WAREHOUSE_PORT: ${PG_WAREHOUSE_PORT}
+      PG_WAREHOUSE_DBNAME: ${PG_WAREHOUSE_DBNAME}
+      PG_WAREHOUSE_USER: ${PG_WAREHOUSE_USER}
+      PG_WAREHOUSE_PASSWORD: ${PG_WAREHOUSE_PASSWORD}
+    network_mode: "bridge"
+    ports:
+      - "5013:5000"
+    restart: unless-stopped
