@@ -8,7 +8,7 @@
 ## Архитектура и рабочий процесс
 
 
-![Архитектура проекта](https://github.com/Mkrasochkin/de_portfolio/blob/main/10_project_stream_project/2._Proekt_1663599076.png) 
+![Архитектура проекта](https://github.com/Mkrasochkin/de_portfolio/blob/main/11_project_cloud_technologies/2_1747338249.png) 
 
 
 1. **Staging Service**: Прием сырой информации из Kafka и помещение в PostgreSQL.
