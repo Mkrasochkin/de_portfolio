@@ -18,7 +18,7 @@
 
 # Архитектура данных
 
-![Архитектура проекта](https://github.com/Mkrasochkin/de_portfolio/blob/main/11_project_cloud_technologies/2_1747338249.png) 
+![Архитектура проекта](https://github.com/Mkrasochkin/de_portfolio/blob/main/12_project_fintech_etl_pipeline/project_1749138984.png) 
 
 Проект реализован по классической схеме DWH с четким разделением ответственности:
 
